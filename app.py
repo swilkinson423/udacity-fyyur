@@ -20,7 +20,7 @@ from forms import *
 
 app = Flask(__name__)
 moment = Moment(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:2524@localhost:5432/fyyur'
+app.config.from_object('config') # URI stored in config.py
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
@@ -33,46 +33,42 @@ class Venue(db.Model):
     __tablename__ = 'venue'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    city = db.Column(db.String(120))
-    state = db.Column(db.String(120))
-    address = db.Column(db.String(120))
-    phone = db.Column(db.String(120))
-    image_link = db.Column(db.String(500))
-    facebook_link = db.Column(db.String(120))
-    # Website > string
-    # Seeking talent > bool
-    # Seeking talent (comment) > string
-    # Genres > array of strings
-
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
+    name = db.Column(db.String, nullable=False)
+    city = db.Column(db.String(120), nullable=False)
+    state = db.Column(db.String(120), nullable=False)
+    address = db.Column(db.String(120), nullable=False)
+    phone = db.Column(db.String(120), nullable=False)
+    image_link = db.Column(db.String(500), nullable=False)
+    website_link = db.Column(db.String(240))
+    facebook_link = db.Column(db.String(240))
+    genres = db.Column(db.String(120), nullable=False) # change to array of strings?
+    seeking = db.Column(db.Boolean, default=False)
+    seeking_comment = db.Column(db.String(500))
+    shows = db.relationship('Shows', backref='venue', lazy=True)
 
 class Artist(db.Model):
     __tablename__ = 'artist'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    city = db.Column(db.String(120))
-    state = db.Column(db.String(120))
-    phone = db.Column(db.String(120))
-    genres = db.Column(db.String(120)) # change to arrat of strings??
-    image_link = db.Column(db.String(500))
-    facebook_link = db.Column(db.String(120))
-    # Website > string
-    # Seeking venue > bool
-    # Seeking venue (comment) > string
-
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
+    name = db.Column(db.String, nullable=False)
+    city = db.Column(db.String(120), nullable=False)
+    state = db.Column(db.String(120), nullable=False)
+    phone = db.Column(db.String(120), nullable=False)
+    image_link = db.Column(db.String(500), nullable=False)
+    website_link = db.Column(db.String(240))
+    facebook_link = db.Column(db.String(240))
+    genres = db.Column(db.String(120), nullable=False) # change to array of strings??
+    seeking = db.Column(db.Boolean, default=False)
+    seeking_comment = db.Column(db.String(500))
+    shows = db.relationship('Shows', backref='artist', lazy=True)
 
 class Shows(db.Model):
     __tablename__ = 'shows'
 
     id = db.Column(db.Integer, primary_key=True)
-    # Date
-    # Band (Foreign Key)
-    # Venue (Foreign Key)
-
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
+    artist_id = db.Column(db.Integer, db.ForeignKey('artist.id'), nullable=False, default=1)
+    venue_id = db.Column(db.Integer, db.ForeignKey('venue.id'), nullable=False, default=1)
+    date = db.Column(db.DateTime)
 
 #----------------------------------------------------------------------------#
 # Filters.
