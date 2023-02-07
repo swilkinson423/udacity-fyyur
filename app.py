@@ -34,14 +34,14 @@ class Venue(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(), nullable=False)
-    city = db.Column(db.String(120), nullable=False) # should this be moved to a new table?
-    state = db.Column(db.String(120), nullable=False) # should this be moved to a new table?
+    city = db.Column(db.String(120), nullable=False)
+    state = db.Column(db.String(120), nullable=False)
     address = db.Column(db.String(120), nullable=False)
     phone = db.Column(db.String(120), nullable=False)
     image_link = db.Column(db.String(500), nullable=False)
     website_link = db.Column(db.String(240))
     facebook_link = db.Column(db.String(240))
-    genres = db.Column(db.String(120), nullable=False) # change to array of strings?
+    genres = db.Column(db.String(120), nullable=False)
     seeking = db.Column(db.Boolean, default=False)
     seeking_comment = db.Column(db.String(500))
     shows = db.relationship('Show', backref='venue', lazy=True)
@@ -55,13 +55,13 @@ class Artist(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(), nullable=False)
-    city = db.Column(db.String(120), nullable=False) # should this be moved to a new table?
-    state = db.Column(db.String(120), nullable=False) # should this be moved to a new table?
+    city = db.Column(db.String(120), nullable=False)
+    state = db.Column(db.String(120), nullable=False)
     phone = db.Column(db.String(120), nullable=False)
     image_link = db.Column(db.String(500), nullable=False)
     website_link = db.Column(db.String(240))
     facebook_link = db.Column(db.String(240))
-    genres = db.Column(db.String(120), nullable=False) # change to array of strings??
+    genres = db.Column(db.String(120), nullable=False)
     seeking = db.Column(db.Boolean, default=False)
     seeking_comment = db.Column(db.String(500))
     shows = db.relationship('Show', backref='artist', lazy=True)
@@ -110,30 +110,50 @@ def index():
 
 @app.route('/venues')
 def venues():
-  # TODO: replace with real venues data.
-  #       num_upcoming_shows should be aggregated based on number of upcoming shows per venue.
-  data=[{
-    "city": "San Francisco",
-    "state": "CA",
-    "venues": [{
-      "id": 1,
-      "name": "The Musical Hop",
-      "num_upcoming_shows": 0,
-    }, {
-      "id": 3,
-      "name": "Park Square Live Music & Coffee",
-      "num_upcoming_shows": 1,
-    }]
-  }, {
-    "city": "New York",
-    "state": "NY",
-    "venues": [{
-      "id": 2,
-      "name": "The Dueling Pianos Bar",
-      "num_upcoming_shows": 0,
-    }]
-  }]
+
+  data=[]
+  
+  locations = (
+    db.session.query(Venue)
+    .with_entities(Venue.city, Venue.state)
+    .filter(Venue.city != "N/A")
+    .distinct()
+  )
+
+  for location in locations:
+    
+    location_data = {
+      "city": location.city,
+      "state": location.state,
+      "venues": []
+    }
+
+    local_venues = (
+      db.session.query(Venue)
+      .filter(Venue.city == location.city)
+    )
+    
+    for venue in local_venues:
+
+      shows = (
+        db.session.query(Show)
+        .filter(Show.venue_id == venue.id)
+        .filter(Show.date > datetime.now())
+        .count()
+      )
+      venue_data = {
+        "id": venue.id,
+        "name": venue.name,
+        "num_upcoming_shows": shows,
+      }
+
+      location_data["venues"].append(venue_data)
+
+    data.append(location_data)
+
+  print(data)
   return render_template('pages/venues.html', areas=data);
+
 
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
@@ -149,6 +169,7 @@ def search_venues():
     }]
   }
   return render_template('pages/search_venues.html', results=response, search_term=request.form.get('search_term', ''))
+
 
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
