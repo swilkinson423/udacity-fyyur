@@ -34,8 +34,8 @@ class Venue(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
-    city = db.Column(db.String(120), nullable=False)
-    state = db.Column(db.String(120), nullable=False)
+    city = db.Column(db.String(120), nullable=False) # should this be moved to a new table?
+    state = db.Column(db.String(120), nullable=False) # should this be moved to a new table?
     address = db.Column(db.String(120), nullable=False)
     phone = db.Column(db.String(120), nullable=False)
     image_link = db.Column(db.String(500), nullable=False)
@@ -44,15 +44,19 @@ class Venue(db.Model):
     genres = db.Column(db.String(120), nullable=False) # change to array of strings?
     seeking = db.Column(db.Boolean, default=False)
     seeking_comment = db.Column(db.String(500))
-    shows = db.relationship('Shows', backref='venue', lazy=True)
+    shows = db.relationship('Show', backref='venue', lazy=True)
+
+    # Send log info for debugging
+    def __repr__(self):
+      return f'<Venue {self.id} {self.name}>'
 
 class Artist(db.Model):
     __tablename__ = 'artist'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
-    city = db.Column(db.String(120), nullable=False)
-    state = db.Column(db.String(120), nullable=False)
+    city = db.Column(db.String(120), nullable=False) # should this be moved to a new table?
+    state = db.Column(db.String(120), nullable=False) # should this be moved to a new table?
     phone = db.Column(db.String(120), nullable=False)
     image_link = db.Column(db.String(500), nullable=False)
     website_link = db.Column(db.String(240))
@@ -60,15 +64,24 @@ class Artist(db.Model):
     genres = db.Column(db.String(120), nullable=False) # change to array of strings??
     seeking = db.Column(db.Boolean, default=False)
     seeking_comment = db.Column(db.String(500))
-    shows = db.relationship('Shows', backref='artist', lazy=True)
+    shows = db.relationship('Show', backref='artist', lazy=True)
 
-class Shows(db.Model):
-    __tablename__ = 'shows'
+    # Send log info for debugging
+    def __repr__(self):
+      return f'<Artist {self.id} {self.name}>'
+
+class Show(db.Model):
+    __tablename__ = 'show'
 
     id = db.Column(db.Integer, primary_key=True)
     artist_id = db.Column(db.Integer, db.ForeignKey('artist.id'), nullable=False, default=1)
     venue_id = db.Column(db.Integer, db.ForeignKey('venue.id'), nullable=False, default=1)
     date = db.Column(db.DateTime)
+
+    # Send log info for debugging
+    def __repr__(self):
+      return f'<Show {self.id}>'
+      
 
 #----------------------------------------------------------------------------#
 # Filters.
