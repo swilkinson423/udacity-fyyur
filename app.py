@@ -30,10 +30,10 @@ migrate = Migrate(app, db)
 #----------------------------------------------------------------------------#
 
 class Venue(db.Model):
-    __tablename__ = 'venue'
+    __tablename__ = 'venues'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, nullable=False)
+    name = db.Column(db.String(), nullable=False)
     city = db.Column(db.String(120), nullable=False) # should this be moved to a new table?
     state = db.Column(db.String(120), nullable=False) # should this be moved to a new table?
     address = db.Column(db.String(120), nullable=False)
@@ -51,10 +51,10 @@ class Venue(db.Model):
       return f'<Venue {self.id} {self.name}>'
 
 class Artist(db.Model):
-    __tablename__ = 'artist'
+    __tablename__ = 'artists'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, nullable=False)
+    name = db.Column(db.String(), nullable=False)
     city = db.Column(db.String(120), nullable=False) # should this be moved to a new table?
     state = db.Column(db.String(120), nullable=False) # should this be moved to a new table?
     phone = db.Column(db.String(120), nullable=False)
@@ -71,17 +71,16 @@ class Artist(db.Model):
       return f'<Artist {self.id} {self.name}>'
 
 class Show(db.Model):
-    __tablename__ = 'show'
+    __tablename__ = 'shows'
 
     id = db.Column(db.Integer, primary_key=True)
-    artist_id = db.Column(db.Integer, db.ForeignKey('artist.id'), nullable=False, default=1)
-    venue_id = db.Column(db.Integer, db.ForeignKey('venue.id'), nullable=False, default=1)
+    artist_id = db.Column(db.Integer, db.ForeignKey('artists.id'), nullable=False, default=1)
+    venue_id = db.Column(db.Integer, db.ForeignKey('venues.id'), nullable=False, default=1)
     date = db.Column(db.DateTime)
 
     # Send log info for debugging
     def __repr__(self):
       return f'<Show {self.id}>'
-      
 
 #----------------------------------------------------------------------------#
 # Filters.
