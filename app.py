@@ -191,16 +191,12 @@ def search_venues():
 
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
-  # shows the venue page with the given venue_id
-  # TODO: replace with real venue data from the venues table, using venue_id
 
   venue = (
     db.session.query(Venue)
     .filter(Venue.id == venue_id)
     .first()
   )
-  
-  
 
   shows_past = []
   shows_upcoming = []
@@ -249,7 +245,6 @@ def show_venue(venue_id):
     "upcoming_shows_count": shows_upcoming_len,
   } 
 
-  #data = list(filter(lambda d: d['id'] == venue_id, [data1, data2, data3]))[0]
   return render_template('pages/show_venue.html', venue=data)
 
 #  Create Venue
@@ -336,8 +331,6 @@ def search_artists():
 
 @app.route('/artists/<int:artist_id>')
 def show_artist(artist_id):
-  # shows the artist page with the given artist_id
-  # TODO: replace with real artist data from the artist table, using artist_id
   
   artist = (
     db.session.query(Artist)
