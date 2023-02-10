@@ -73,6 +73,21 @@
 </section>
 
 <a href="/artists/{{ artist.id }}/edit"><button class="btn btn-primary btn-lg">Edit</button></a>
+<button id="delete_button" class="btn btn-lg btn_danger" data-id="{{ artist.id }}">Delete</button>
+
+<script>
+	// Update the MODEL when a artist is deleted.
+	const delete_artist_button = document.getElementById('delete_button');
+	delete_artist_button.onclick = function(e) {
+		const artistID = e.target.dataset['id'];
+		fetch('/artists/' + artistID, {
+			method: 'DELETE'
+		})
+//		.then(function(){
+//			window.open('/', "__self");
+//		})
+	}
+</script>
 
 {% endblock %}
 

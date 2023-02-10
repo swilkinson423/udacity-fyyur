@@ -182,8 +182,23 @@ h2.monospace {
   opacity: 0.7;
 }
 .shows .tile-show {
-  height: 350px;
+  min-height: 350px;
 }
+.tile-head {
+  position: relative;
+  min-height: 350px;
+}
+.tile-foot {
+  position: absolute;
+  min-height: 70px;
+  bottom: 0;
+}
+
+
+.button-hidden {
+  display: none;
+}
+
 .tile {
   text-align: center;
   padding: 15px 25px;

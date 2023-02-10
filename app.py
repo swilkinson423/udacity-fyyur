@@ -254,8 +254,6 @@ def show_venue(venue_id):
     "upcoming_shows_count": shows_upcoming_len,
   } 
 
-  print(data)
-
   return render_template('pages/show_venue.html', venue=data)
 
 
@@ -292,12 +290,13 @@ def create_venue_submission():
 
     db.session.add(venue)
     db.session.commit()
-    
+
     flash('Venue ' + venue.name + ' was successfully listed!')
   except:
     db.session.rollback()
     error=True
     flash('An error occurred. Venue could not be listed.')
+    print(sys.exc_info())
   finally:
     db.session.close()
   if error:
@@ -313,9 +312,31 @@ def delete_venue(venue_id):
   # TODO: Complete this endpoint for taking a venue_id, and using
   # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
 
-  # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
-  # clicking that button delete it from the db then redirect the user to the homepage
-  return None
+  error = False
+
+  venue = Venue.query.filter_by(id=venue_id)
+
+
+
+  try:
+    venue.delete()
+    db.session.commit()
+    flash('Venue successfully deleted.')
+  except:
+    db.session.rollback()
+    error = True
+    flash('Something went wrong. Make sure there are no Shows pending')
+    print('...3')
+    print(sys.exc_info())
+  finally:
+    print('...4')
+    db.session.close()
+  if error:
+    print('There was a problem deleting the venue!!')
+    return jsonify({ 'success': False })
+  else:
+    print('Venue deleted successfully!')
+    return jsonify({ 'success': True })
 
 
 #  Update Venue
@@ -570,6 +591,7 @@ def shows():
     artist = Artist.query.get(show.artist_id)
 
     show_data = {
+      "id": show.id,
       "venue_id": show.venue_id,
       "venue_name": venue.name,
       "artist_id": show.artist_id,
@@ -604,7 +626,35 @@ def create_show_submission():
   # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
   return render_template('pages/home.html')
 
+#  Delete Shows
+#  ----------------------------------------------------------------
 
+@app.route('/shows/<show_id>', methods=['DELETE'])
+def delete_show(show_id):
+
+  error = False
+
+  show = Show.query.filter_by(id=show_id)
+
+  try:
+    show.delete()
+    db.session.commit()
+    flash('Show successfully deleted.')
+  except:
+    print('4')
+    db.session.rollback()
+    error = True
+    flash('Something went wrong.')
+    print(sys.exc_info())
+  finally:
+    db.session.close()
+  if error:
+    print('There was a problem deleting the show!!')
+    return jsonify({ 'success': False })
+  else:
+    print('Show deleted successfully!')
+    return jsonify({ 'success': True })
+    
 
 #  Error Handlers
 #  ----------------------------------------------------------------

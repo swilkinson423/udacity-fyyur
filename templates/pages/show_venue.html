@@ -76,6 +76,21 @@
 </section>
 
 <a href="/venues/{{ venue.id }}/edit"><button class="btn btn-primary btn-lg">Edit</button></a>
+<button id="delete_button" class="btn btn-lg btn-danger" data-id="{{ venue.id }}">Delete</button>
+
+<script>
+	// Update the MODEL when a venue is deleted.
+	const delete_venue_button = document.getElementById('delete_button');
+	delete_venue_button.onclick = function(e) {
+		const venueID = e.target.dataset['id'];
+		fetch('/venues/' + venueID, {
+			method: 'DELETE'
+		})
+		.then(function(){
+			window.open('/', "_self");
+		})
+	}
+</script>
 
 {% endblock %}
 

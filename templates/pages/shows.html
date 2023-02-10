@@ -5,13 +5,80 @@
     {%for show in shows %}
     <div class="col-sm-4">
         <div class="tile tile-show">
-            <img src="{{ show.artist_image_link }}" alt="Artist Image" />
-            <h4>{{ show.start_time|datetime('full') }}</h4>
-            <h5><a href="/artists/{{ show.artist_id }}">{{ show.artist_name }}</a></h5>
-            <p>playing at</p>
-            <h5><a href="/venues/{{ show.venue_id }}">{{ show.venue_name }}</a></h5>
+            <div class="tile-head">
+                <img src="{{ show.artist_image_link }}" alt="Artist Image" />
+                <h4>{{ show.start_time|datetime('full') }}</h4>
+                <h5><a href="/artists/{{ show.artist_id }}">{{ show.artist_name }}</a></h5>
+                <p>playing at</p>
+                <h5><a href="/venues/{{ show.venue_id }}">{{ show.venue_name }}</a></h5>
+            </div>
+            <div class="tile-foot">
+                <button class="btn btn-lg btn-danger button-hidden" data-id="{{ show.id }}">Delete</button>
+            </div>
         </div>
     </div>
     {% endfor %}
 </div>
+<div>
+    <button id="show_delete_button" class="btn btn-lg btn-warning">Delete Shows?</button>
+</div>
+
+<script>
+    // Show or hide the delete buttons for the shows tiles
+    const show_delete_button = document.getElementById('show_delete_button');
+    
+    const delete_buttons = document.querySelectorAll('.btn-danger');
+    const show_tiles = document.querySelectorAll('.tile-show');
+
+    var buttons_visible = false;
+
+    show_delete_button.onclick = function(e) {
+        if (buttons_visible == false) {
+            buttons_visible = true;
+            show_delete_button.innerHTML = 'Done';
+
+            for (let i = 0; i < delete_buttons.length; i++) {
+                const delete_button = delete_buttons[i];
+                delete_button.className = 'btn btn-lg btn-danger';
+
+                const show_tile = show_tiles[i];
+                show_tile.style.height = '420px';
+            }
+        } else {
+            buttons_visible = false;
+            show_delete_button.innerHTML = 'Delete Shows?';
+
+            for (let i = 0; i < delete_buttons.length; i++) {
+                const delete_button = delete_buttons[i];
+                delete_button.className = 'btn btn-lg btn-danger button-hidden';
+
+                const show_tile = show_tiles[i];
+                show_tile.style.height = '350px';
+            }
+        }
+
+    }
+    
+    // Update the MODEL when a show is deleted.
+    const delete_show_buttons = document.querySelectorAll('.btn-danger');
+    for (let i = 0; i < delete_show_buttons.length; i++) {
+        const delete_show_button = delete_show_buttons[i];
+        delete_show_button.onclick = function(e) {
+            const showID = e.target.dataset['id'];
+            console.log('Deleting Show: ' + showID);
+            fetch('/shows/' + showID, {
+                method: 'DELETE'
+            })
+            .then(function() {
+                const item = show_tiles[i];
+                item.remove();
+            })
+            .then(function(){
+			    window.open('/shows', "_self");
+		    })
+        }
+    }
+
+</script>
+
 {% endblock %}
