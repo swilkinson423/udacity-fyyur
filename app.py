@@ -5,7 +5,7 @@
 import json
 import dateutil.parser
 import babel
-from flask import Flask, render_template, request, Response, flash, redirect, url_for
+from flask import Flask, render_template, request, Response, flash, redirect, url_for, jsonify
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -13,6 +13,7 @@ import logging
 from logging import Formatter, FileHandler
 from flask_wtf import Form
 from forms import *
+import sys
 
 #----------------------------------------------------------------------------#
 # App Config.
@@ -24,6 +25,8 @@ app.config.from_object('config') # URI stored in config.py
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+
+app.app_context().push()
 
 #----------------------------------------------------------------------------#
 # Models.
@@ -110,7 +113,7 @@ def index():
   return render_template('pages/home.html')
 
 
-#  Venues
+#  List Venues
 #  ----------------------------------------------------------------
 
 @app.route('/venues')
@@ -159,6 +162,9 @@ def venues():
   return render_template('pages/venues.html', areas=data);
 
 
+#  Search Venues
+#  ----------------------------------------------------------------
+
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
 
@@ -188,6 +194,9 @@ def search_venues():
 
   return render_template('pages/search_venues.html', results=response, search_term=request.form.get('search_term', ''))
 
+
+#  Display Venue
+#  ----------------------------------------------------------------
 
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
@@ -245,7 +254,10 @@ def show_venue(venue_id):
     "upcoming_shows_count": shows_upcoming_len,
   } 
 
+  print(data)
+
   return render_template('pages/show_venue.html', venue=data)
+
 
 #  Create Venue
 #  ----------------------------------------------------------------
@@ -257,16 +269,45 @@ def create_venue_form():
 
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
-  # TODO: insert form data as a new Venue record in the db, instead
-  # TODO: modify data to be the data object returned from db insertion
+  
+  form = VenueForm(request.form)
 
-  # on successful db insert, flash success
-  flash('Venue ' + request.form['name'] + ' was successfully listed!')
-  # TODO: on unsuccessful db insert, flash an error instead.
-  # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
-  # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
-  return render_template('pages/home.html')
+  error = False
 
+  try:
+
+    venue = Venue(
+      name =              form.name.data,
+      city =              form.city.data,
+      state =             form.state.data,
+      address =           form.address.data, # TODO REMOVE THIS FOR ARTIST
+      phone =             form.phone.data,
+      genres =            form.genres.data, # TODO fix this
+      image_link =        form.image_link.data,
+      facebook_link =     form.facebook_link.data,
+      website_link =      form.website_link.data,
+      seeking =           form.seeking_talent.data, # TODO fix this for artist
+      seeking_comment =   form.seeking_description.data
+    )
+
+    db.session.add(venue)
+    db.session.commit()
+    
+    flash('Venue ' + venue.name + ' was successfully listed!')
+  except:
+    db.session.rollback()
+    error=True
+    flash('An error occurred. Venue could not be listed.')
+  finally:
+    db.session.close()
+  if error:
+    return render_template('pages/home.html')
+  else:
+    return redirect(url_for('show_venue', venue_id=venue.id))
+
+
+#  Delete Venue
+#  ----------------------------------------------------------------
 @app.route('/venues/<venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):
   # TODO: Complete this endpoint for taking a venue_id, and using
@@ -277,7 +318,43 @@ def delete_venue(venue_id):
   return None
 
 
-#  Artists
+#  Update Venue
+#  ----------------------------------------------------------------
+
+@app.route('/venues/<int:venue_id>/edit', methods=['GET'])
+def edit_venue(venue_id):
+  form = VenueForm()
+  venue={
+    "id": 1,
+    "name": "The Musical Hop",
+    "genres": ["Jazz", "Reggae", "Swing", "Classical", "Folk"],
+    "address": "1015 Folsom Street",
+    "city": "San Francisco",
+    "state": "CA",
+    "phone": "123-123-1234",
+    "website": "https://www.themusicalhop.com",
+    "facebook_link": "https://www.facebook.com/TheMusicalHop",
+    "seeking_talent": True,
+    "seeking_description": "We are on the lookout for a local artist to play every two weeks. Please call us.",
+    "image_link": "https://images.unsplash.com/photo-1543900694-133f37abaaa5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60"
+  }
+  # TODO: populate form with values from venue with ID <venue_id>
+  return render_template('forms/edit_venue.html', form=form, venue=venue)
+
+@app.route('/venues/<int:venue_id>/edit', methods=['POST'])
+def edit_venue_submission(venue_id):
+  # TODO: take values from the form submitted, and update existing
+  # venue record with ID <venue_id> using the new attributes
+  return redirect(url_for('show_venue', venue_id=venue_id))
+
+
+
+
+
+
+
+
+#  List Artists
 #  ----------------------------------------------------------------
 @app.route('/artists')
 def artists():
@@ -299,6 +376,10 @@ def artists():
     data.append(artist_data)
 
   return render_template('pages/artists.html', artists=data)
+
+
+#  Search Artists
+#  ----------------------------------------------------------------
 
 @app.route('/artists/search', methods=['POST'])
 def search_artists():
@@ -328,6 +409,10 @@ def search_artists():
     response['data'].append(artist_info)
 
   return render_template('pages/search_artists.html', results=response, search_term=request.form.get('search_term', ''))
+
+
+#  Display Artists
+#  ----------------------------------------------------------------
 
 @app.route('/artists/<int:artist_id>')
 def show_artist(artist_id):
@@ -386,7 +471,41 @@ def show_artist(artist_id):
 
   return render_template('pages/show_artist.html', artist=data)
 
-#  Update
+
+#  Create Artist
+#  ----------------------------------------------------------------
+
+@app.route('/artists/create', methods=['GET'])
+def create_artist_form():
+  form = ArtistForm()
+  return render_template('forms/new_artist.html', form=form)
+
+@app.route('/artists/create', methods=['POST'])
+def create_artist_submission():
+  # called upon submitting the new artist listing form
+  # TODO: insert form data as a new Venue record in the db, instead
+  # TODO: modify data to be the data object returned from db insertion
+
+  # on successful db insert, flash success
+  flash('Artist ' + request.form['name'] + ' was successfully listed!')
+  # TODO: on unsuccessful db insert, flash an error instead.
+  # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
+  return render_template('pages/home.html')
+
+
+#  Delete Artist
+#  ----------------------------------------------------------------
+@app.route('/artist/<artist_id>', methods=['DELETE'])
+def delete_artist(artist_id):
+  # TODO: Complete this endpoint for taking a venue_id, and using
+  # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
+
+  # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
+  # clicking that button delete it from the db then redirect the user to the homepage
+  return None
+
+
+#  Update Artist
 #  ----------------------------------------------------------------
 @app.route('/artists/<int:artist_id>/edit', methods=['GET'])
 def edit_artist(artist_id):
@@ -414,55 +533,26 @@ def edit_artist_submission(artist_id):
 
   return redirect(url_for('show_artist', artist_id=artist_id))
 
-@app.route('/venues/<int:venue_id>/edit', methods=['GET'])
-def edit_venue(venue_id):
-  form = VenueForm()
-  venue={
-    "id": 1,
-    "name": "The Musical Hop",
-    "genres": ["Jazz", "Reggae", "Swing", "Classical", "Folk"],
-    "address": "1015 Folsom Street",
-    "city": "San Francisco",
-    "state": "CA",
-    "phone": "123-123-1234",
-    "website": "https://www.themusicalhop.com",
-    "facebook_link": "https://www.facebook.com/TheMusicalHop",
-    "seeking_talent": True,
-    "seeking_description": "We are on the lookout for a local artist to play every two weeks. Please call us.",
-    "image_link": "https://images.unsplash.com/photo-1543900694-133f37abaaa5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60"
-  }
-  # TODO: populate form with values from venue with ID <venue_id>
-  return render_template('forms/edit_venue.html', form=form, venue=venue)
-
-@app.route('/venues/<int:venue_id>/edit', methods=['POST'])
-def edit_venue_submission(venue_id):
-  # TODO: take values from the form submitted, and update existing
-  # venue record with ID <venue_id> using the new attributes
-  return redirect(url_for('show_venue', venue_id=venue_id))
-
-#  Create Artist
-#  ----------------------------------------------------------------
-
-@app.route('/artists/create', methods=['GET'])
-def create_artist_form():
-  form = ArtistForm()
-  return render_template('forms/new_artist.html', form=form)
-
-@app.route('/artists/create', methods=['POST'])
-def create_artist_submission():
-  # called upon submitting the new artist listing form
-  # TODO: insert form data as a new Venue record in the db, instead
-  # TODO: modify data to be the data object returned from db insertion
-
-  # on successful db insert, flash success
-  flash('Artist ' + request.form['name'] + ' was successfully listed!')
-  # TODO: on unsuccessful db insert, flash an error instead.
-  # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
-  return render_template('pages/home.html')
 
 
 
-#  Shows
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#  List Shows
 #  ----------------------------------------------------------------
 
 @app.route('/shows')
@@ -492,6 +582,10 @@ def shows():
 
   return render_template('pages/shows.html', shows=data)
 
+
+#  Create Shows
+#  ----------------------------------------------------------------
+
 @app.route('/shows/create')
 def create_shows():
   # renders form. do not touch.
@@ -510,6 +604,10 @@ def create_show_submission():
   # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
   return render_template('pages/home.html')
 
+
+
+#  Error Handlers
+#  ----------------------------------------------------------------
 @app.errorhandler(404)
 def not_found_error(error):
     return render_template('errors/404.html'), 404
@@ -528,6 +626,8 @@ if not app.debug:
     file_handler.setLevel(logging.INFO)
     app.logger.addHandler(file_handler)
     app.logger.info('errors')
+
+
 
 #----------------------------------------------------------------------------#
 # Launch.
