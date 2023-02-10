@@ -184,6 +184,11 @@ h2.monospace {
 .shows .tile-show {
   min-height: 350px;
 }
+.tile-show-past {
+  filter: brightness(50%);
+  background-color: #d5d5d5;
+}
+ 
 .tile-head {
   position: relative;
   min-height: 350px;

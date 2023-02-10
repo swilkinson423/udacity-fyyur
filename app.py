@@ -213,6 +213,7 @@ def show_venue(venue_id):
   shows = (
     db.session.query(Show)
     .filter(Show.venue_id == venue_id)
+    .order_by(Show.date.asc())
   )
 
   for show in shows:
@@ -251,7 +252,7 @@ def show_venue(venue_id):
     "past_shows": shows_past,
     "upcoming_shows": shows_upcoming,
     "past_shows_count": shows_past_len,
-    "upcoming_shows_count": shows_upcoming_len,
+    "upcoming_shows_count": shows_upcoming_len
   } 
 
   return render_template('pages/show_venue.html', venue=data)
@@ -309,33 +310,28 @@ def create_venue_submission():
 #  ----------------------------------------------------------------
 @app.route('/venues/<venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):
-  # TODO: Complete this endpoint for taking a venue_id, and using
-  # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
 
   error = False
 
   venue = Venue.query.filter_by(id=venue_id)
-
-
+  shows = Show.query.filter_by(venue_id=venue_id)
 
   try:
+    for show in shows:
+      show.venue_id = 2
     venue.delete()
     db.session.commit()
-    flash('Venue successfully deleted.')
+    flash('Venue deleted successfully!')
   except:
     db.session.rollback()
     error = True
-    flash('Something went wrong. Make sure there are no Shows pending')
-    print('...3')
+    flash('There was a problem deleting the venue!!')
     print(sys.exc_info())
   finally:
-    print('...4')
     db.session.close()
   if error:
-    print('There was a problem deleting the venue!!')
     return jsonify({ 'success': False })
   else:
-    print('Venue deleted successfully!')
     return jsonify({ 'success': True })
 
 
@@ -516,14 +512,31 @@ def create_artist_submission():
 
 #  Delete Artist
 #  ----------------------------------------------------------------
-@app.route('/artist/<artist_id>', methods=['DELETE'])
+@app.route('/artists/<artist_id>', methods=['DELETE'])
 def delete_artist(artist_id):
-  # TODO: Complete this endpoint for taking a venue_id, and using
-  # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
 
-  # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
-  # clicking that button delete it from the db then redirect the user to the homepage
-  return None
+  error = False
+
+  artist = Artist.query.filter_by(id=artist_id)
+  shows = Show.query.filter_by(artist_id=artist_id)
+
+  try:
+    for show in shows:
+      show.artist_id = 2
+    artist.delete()
+    db.session.commit()
+    flash('Artist deleted successfully!')
+  except:
+    db.session.rollback()
+    error = True
+    flash('There was a problem deleting the Artist!!')
+    print(sys.exc_info())
+  finally:
+    db.session.close()
+  if error:
+    return jsonify({ 'success': False })
+  else:
+    return jsonify({ 'success': True })
 
 
 #  Update Artist
@@ -579,10 +592,12 @@ def edit_artist_submission(artist_id):
 @app.route('/shows')
 def shows():
 
-  data = []
+  shows_past = []
+  shows_upcoming = []
 
   shows = (
     db.session.query(Show)
+    .order_by(Show.date.asc())
   )
 
   for show in shows:
@@ -590,7 +605,7 @@ def shows():
     venue = Venue.query.get(show.venue_id)
     artist = Artist.query.get(show.artist_id)
 
-    show_data = {
+    show_info = {
       "id": show.id,
       "venue_id": show.venue_id,
       "venue_name": venue.name,
@@ -600,7 +615,16 @@ def shows():
       "start_time": show.date
     }
 
-    data.append(show_data)
+    if show.date < datetime.now():
+      shows_past.append(show_info)
+    else:
+      shows_upcoming.append(show_info)
+
+
+  data = {
+    "past_shows": shows_past,
+    "upcoming_shows": shows_upcoming
+  }
 
   return render_template('pages/shows.html', shows=data)
 
@@ -654,7 +678,7 @@ def delete_show(show_id):
   else:
     print('Show deleted successfully!')
     return jsonify({ 'success': True })
-    
+
 
 #  Error Handlers
 #  ----------------------------------------------------------------
