@@ -85,6 +85,22 @@ class Show(db.Model):
     def __repr__(self):
       return f'<Show {self.id}>'
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #----------------------------------------------------------------------------#
 # Filters.
 #----------------------------------------------------------------------------#
@@ -103,6 +119,28 @@ def format_datetime(value, format='medium'):
   return babel.dates.format_datetime(date, format, locale='en')
 
 app.jinja_env.filters['datetime'] = format_datetime
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #----------------------------------------------------------------------------#
 # Controllers.
@@ -364,6 +402,14 @@ def edit_venue_submission(venue_id):
   # TODO: take values from the form submitted, and update existing
   # venue record with ID <venue_id> using the new attributes
   return redirect(url_for('show_venue', venue_id=venue_id))
+
+
+
+
+
+
+
+
 
 
 
@@ -706,6 +752,24 @@ def delete_show(show_id):
   else:
     print('Show deleted successfully!')
     return jsonify({ 'success': True })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #  Error Handlers
