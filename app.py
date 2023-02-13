@@ -311,15 +311,16 @@ def create_venue_submission():
 
   error = False
 
-  try:
+  separator = ', '
 
+  try:
     venue = Venue(
       name =              form.name.data,
       city =              form.city.data,
       state =             form.state.data,
       address =           form.address.data,
       phone =             form.phone.data,
-      genres =            form.genres.data, # TODO fix this
+      genres =            separator.join(form.genres.data),
       image_link =        form.image_link.data,
       facebook_link =     form.facebook_link.data,
       website_link =      form.website_link.data,
@@ -382,7 +383,7 @@ def edit_venue(venue_id):
   
   venue = Venue.query.get(venue_id)
 
-  #form = VenueForm()
+  separator = ', '
 
   form = VenueForm(
     name =                  venue.name,
@@ -390,7 +391,7 @@ def edit_venue(venue_id):
     state =                 venue.state,
     address =               venue.address,
     phone =                 venue.phone,
-    genres =                venue.genres, # TODO fix this
+    genres =                separator.join(venue.genres),
     image_link =            venue.image_link,
     facebook_link =         venue.facebook_link,
     website_link =          venue.website_link,
@@ -408,6 +409,8 @@ def edit_venue_submission(venue_id):
   form = VenueForm(request.form)
   venue = Venue.query.get(venue_id)
   
+  separator = ', '
+
   error = False
 
   venue_update = Venue(
@@ -416,7 +419,7 @@ def edit_venue_submission(venue_id):
     state =             form.state.data,
     address =           form.address.data,
     phone =             form.phone.data,
-    genres =            form.genres.data, # TODO fix this
+    genres =            separator.join(form.genres.data),
     image_link =        form.image_link.data,
     facebook_link =     form.facebook_link.data,
     website_link =      form.website_link.data,
@@ -430,7 +433,7 @@ def edit_venue_submission(venue_id):
     venue.state =             venue_update.state
     venue.address =           venue_update.address
     venue.phone =             venue_update.phone
-    venue.genres =            venue_update.genres # TODO fix this
+    venue.genres =            venue_update.genres
     venue.image_link =        venue_update.image_link
     venue.facebook_link =     venue_update.facebook_link
     venue.website_link =      venue_update.website_link
@@ -596,6 +599,8 @@ def create_artist_submission():
 
   error = False
 
+  separator = ', '
+
   try:
 
     artist = Artist(
@@ -603,7 +608,7 @@ def create_artist_submission():
       city =              form.city.data,
       state =             form.state.data,
       phone =             form.phone.data,
-      genres =            form.genres.data, # TODO fix this
+      genres =            separator.join(form.genres.data),
       image_link =        form.image_link.data,
       facebook_link =     form.facebook_link.data,
       website_link =      form.website_link.data,
@@ -664,12 +669,14 @@ def edit_artist(artist_id):
 
   artist = Artist.query.get(artist_id)
 
+  separator = ', '
+
   form = ArtistForm(
     name =                  artist.name,
     city =                  artist.city,
     state =                 artist.state,
     phone =                 artist.phone,
-    genres =                artist.genres, # TODO fix this
+    genres =                separator.join(artist.genres),
     image_link =            artist.image_link,
     facebook_link =         artist.facebook_link,
     website_link =          artist.website_link,
@@ -686,6 +693,8 @@ def edit_artist_submission(artist_id):
   form = ArtistForm(request.form)
   artist = Artist.query.get(artist_id)
   
+  separator = ', '
+
   error = False
 
   artist_update = Artist(
@@ -693,7 +702,7 @@ def edit_artist_submission(artist_id):
     city =              form.city.data,
     state =             form.state.data,
     phone =             form.phone.data,
-    genres =            form.genres.data, # TODO fix this
+    genres =            separator.join(form.genres.data),
     image_link =        form.image_link.data,
     facebook_link =     form.facebook_link.data,
     website_link =      form.website_link.data,
@@ -706,7 +715,7 @@ def edit_artist_submission(artist_id):
     artist.city =              artist_update.city
     artist.state =             artist_update.state
     artist.phone =             artist_update.phone
-    artist.genres =            artist_update.genres # TODO fix this
+    artist.genres =            artist_update.genres
     artist.image_link =        artist_update.image_link
     artist.facebook_link =     artist_update.facebook_link
     artist.website_link =      artist_update.website_link
