@@ -661,36 +661,72 @@ def delete_artist(artist_id):
 #  ----------------------------------------------------------------
 @app.route('/artists/<int:artist_id>/edit', methods=['GET'])
 def edit_artist(artist_id):
-  form = ArtistForm()
-  artist={
-    "id": 4,
-    "name": "Guns N Petals",
-    "genres": ["Rock n Roll"],
-    "city": "San Francisco",
-    "state": "CA",
-    "phone": "326-123-5000",
-    "website": "https://www.gunsnpetalsband.com",
-    "facebook_link": "https://www.facebook.com/GunsNPetals",
-    "seeking_venue": True,
-    "seeking_description": "Looking for shows to perform at in the San Francisco Bay Area!",
-    "image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80"
-  }
-  # TODO: populate form with fields from artist with ID <artist_id>
+
+  artist = Artist.query.get(artist_id)
+
+  form = ArtistForm(
+    name =                  artist.name,
+    city =                  artist.city,
+    state =                 artist.state,
+    phone =                 artist.phone,
+    genres =                artist.genres, # TODO fix this
+    image_link =            artist.image_link,
+    facebook_link =         artist.facebook_link,
+    website_link =          artist.website_link,
+    seeking_venue =         artist.seeking,
+    seeking_description =   artist.seeking_comment
+  )
+
   return render_template('forms/edit_artist.html', form=form, artist=artist)
+
 
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
 def edit_artist_submission(artist_id):
-  # TODO: take values from the form submitted, and update existing
-  # artist record with ID <artist_id> using the new attributes
 
-  return redirect(url_for('show_artist', artist_id=artist_id))
+  form = ArtistForm(request.form)
+  artist = Artist.query.get(artist_id)
+  
+  error = False
 
+  artist_update = Artist(
+    name =              form.name.data,
+    city =              form.city.data,
+    state =             form.state.data,
+    phone =             form.phone.data,
+    genres =            form.genres.data, # TODO fix this
+    image_link =        form.image_link.data,
+    facebook_link =     form.facebook_link.data,
+    website_link =      form.website_link.data,
+    seeking =           form.seeking_venue.data,
+    seeking_comment =   form.seeking_description.data
+  )
 
+  try:
+    artist.name =              artist_update.name
+    artist.city =              artist_update.city
+    artist.state =             artist_update.state
+    artist.phone =             artist_update.phone
+    artist.genres =            artist_update.genres # TODO fix this
+    artist.image_link =        artist_update.image_link
+    artist.facebook_link =     artist_update.facebook_link
+    artist.website_link =      artist_update.website_link
+    artist.seeking =           artist_update.seeking
+    artist.seeking_comment =   artist_update.seeking_comment
 
+    db.session.commit()
 
-
-
-
+    flash('Artist ' + artist.name + ' was successfully updated!')
+  except:
+    db.session.rollback()
+    error = True
+    flash('An error occured. The artist could not be updated.')
+    print(sys.exc_info())
+  finally:
+    db.session.close()
+  if error:
+    return render_template('/artist/' + artist_id + '/edit')
+  else: 
+    return redirect(url_for('show_artist', artist_id=artist_id))
 
 
 
