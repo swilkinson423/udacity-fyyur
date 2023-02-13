@@ -14,6 +14,7 @@ from logging import Formatter, FileHandler
 from flask_wtf import Form
 from forms import *
 import sys
+from sqlalchemy import event, DDL
 
 #----------------------------------------------------------------------------#
 # App Config.
@@ -86,12 +87,34 @@ class Show(db.Model):
       return f'<Show {self.id}>'
 
 
+#  Set up default values in the tables
+#  ----------------------------------------------------------------
 
+event.listen(
+    Venue.__table__,
+    "after_create",
+    DDL(
+      "INSERT INTO venues (id, name, city, state, address, phone, image_link, website_link, facebook_link, genres, seeking, seeking_comment) VALUES (2, '[VENUE REMOVED]', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A', False, '');"
+      "INSERT INTO venues(id, name, city, state, address, phone, image_link, website_link, facebook_link, genres, seeking, seeking_comment) VALUES (1, 'TBD', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A', False, '');"
+      "ALTER TABLE venue AUTO_INCREMENT = 3;"
+    )
+)
 
+event.listen(
+    Artist.__table__,
+    "after_create",
+    DDL(
+      "INSERT INTO artists(id, name, city, state, phone, image_link, website_link, facebook_link, genres, seeking, seeking_comment) VALUES (1, 'TBD', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A', False, '');"
+      "INSERT INTO artists (id, name, city, state, phone, image_link, website_link, facebook_link, genres, seeking, seeking_comment) VALUES (2, '[ARTIST REMOVED]', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A', False, '');"
+      "ALTER TABLE artist AUTO_INCREMENT = 3;"
+    )
+)
 
-
-
-
+event.listen(
+    Show.__table__,
+    "after_create",
+    DDL("ALTER TABLE venue AUTO_INCREMENT = 1;")
+)
 
 
 
