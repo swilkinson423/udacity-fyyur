@@ -90,31 +90,72 @@ class Show(db.Model):
 #  Set up default values in the tables
 #  ----------------------------------------------------------------
 
-event.listen(
-    Venue.__table__,
-    "after_create",
-    DDL(
-      "INSERT INTO venues (id, name, city, state, address, phone, image_link, website_link, facebook_link, genres, seeking, seeking_comment) VALUES (2, '[VENUE REMOVED]', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A', False, '');"
-      "INSERT INTO venues(id, name, city, state, address, phone, image_link, website_link, facebook_link, genres, seeking, seeking_comment) VALUES (1, 'TBD', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A', False, '');"
-      "ALTER TABLE venue AUTO_INCREMENT = 3;"
-    )
-)
+@app.before_first_request
+def populate_db():
 
-event.listen(
-    Artist.__table__,
-    "after_create",
-    DDL(
-      "INSERT INTO artists(id, name, city, state, phone, image_link, website_link, facebook_link, genres, seeking, seeking_comment) VALUES (1, 'TBD', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A', False, '');"
-      "INSERT INTO artists (id, name, city, state, phone, image_link, website_link, facebook_link, genres, seeking, seeking_comment) VALUES (2, '[ARTIST REMOVED]', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A', False, '');"
-      "ALTER TABLE artist AUTO_INCREMENT = 3;"
-    )
-)
+  venueNull = Venue(
+    #id =                1,
+    name =              'TBD',
+    city =              'N/A',
+    state =             'N/A',
+    address =           'N/A',
+    phone =             'N/A',
+    genres =            'N/A',
+    image_link =        'N/A',
+    facebook_link =     'N/A',
+    website_link =      'N/A',
+    seeking =           False,
+    seeking_comment =   'N/A'
+  )
 
-event.listen(
-    Show.__table__,
-    "after_create",
-    DDL("ALTER TABLE venue AUTO_INCREMENT = 1;")
-)
+  venueRemoved = Venue(
+    #id =                2,
+    name =              '[VENUE REMOVED]',
+    city =              'N/A',
+    state =             'N/A',
+    address =           'N/A',
+    phone =             'N/A',
+    genres =            'N/A',
+    image_link =        'N/A',
+    facebook_link =     'N/A',
+    website_link =      'N/A',
+    seeking =           False,
+    seeking_comment =   'N/A'
+  )
+
+  artistNull = Artist(
+    #id =                1,
+    name =              'TBD',
+    city =              'N/A',
+    state =             'N/A',
+    phone =             'N/A',
+    genres =            'N/A',
+    image_link =        'N/A',
+    facebook_link =     'N/A',
+    website_link =      'N/A',
+    seeking =           False,
+    seeking_comment =   'N/A'
+  )
+
+  artistRemoved = Artist(
+    #id =                2,
+    name =              '[ARTIST REMOVED]',
+    city =              'N/A',
+    state =             'N/A',
+    phone =             'N/A',
+    genres =            'N/A',
+    image_link =        'N/A',
+    facebook_link =     'N/A',
+    website_link =      'N/A',
+    seeking =           False,
+    seeking_comment =   'N/A'
+  )
+
+  db.session.add(venueNull)
+  db.session.add(venueRemoved)
+  db.session.add(artistNull)
+  db.session.add(artistRemoved)
+  db.session.commit()
 
 
 
